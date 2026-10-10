@@ -71,3 +71,9 @@ venv.bak/
 *.log
 temp/
 tmp/
+
+# Raw Transcripts & Audio/Text Notes
+transcripts/
+raw_transcripts/
+*.txt
+
