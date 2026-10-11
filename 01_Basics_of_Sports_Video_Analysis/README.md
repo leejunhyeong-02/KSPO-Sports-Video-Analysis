@@ -181,7 +181,7 @@ $$\theta \text{ (rad)} = \frac{s \text{ (호의 길이)}}{r \text{ (반지름)}}
 ```text
 [1. Wind-up] ──▶ [2. Stride] ──▶ [3. Arm Cocking] ──▶ [4. Acceleration] ──▶ [5. Deceleration] ──▶ [6. Follow-through]
                        │                   │                     │
-                  Foot Strike(FS)    Max External(MER)     Ball Release(BR)
+                  Foot Strike(FS)    Max External Rotation(MER)     Ball Release(BR)
 ```
 
 1. **Wind-up (준비기)**: 투구 시작부터 앞발이 최고 높이에 도달할 때까지.
@@ -221,7 +221,7 @@ graph TD
 | **물리량 및 단위** | **힘 (Force, $\text{N}$)**: 3차원 직교 좌표계 ($F_x, F_y, F_z$) | **압력 (Pressure, $\text{kPa}$)**: $\text{Pressure} = \frac{\text{Force}}{\text{Area}}$ |
 | **샘플링 레이트** | **1,000 Hz ~ 3,000 Hz (초고속)** | 보통 **100 Hz ~ 500 Hz** |
 | **주요 분석 변인** | • 수직 지면반력 피크 ($F_z$ Peak)<br/>• 제동력(Braking Force) 및 추진력(Propulsion Force)<br/>• 압력중심점 (Center of Pressure, COP) | • 부위별 접촉 면적 (Forefoot, Midfoot, Rearfoot)<br/>• 국소 부위 피크 압력 (Peak Pressure)<br/>• 압력 시간 적분치 (Pressure-Time Integral) |
-| **현장 적용 분야** | • 투수/타자의 디딤발 제동 및 회전 모멘텀 전달 분석<br/>• 점프 착지 시 하지 관절 충격량 분석 | • 종목별 맞춤 스파이크/신발 인솔 설계<br/>• 당뇨발, 평발 보행 궤적 및 족저근막염 부상 진단 |
+| **현장 적용 분야** | • 투수/타자의 디딤발 제동 및 회전 모멘텀 전달 분석<br/>• 점프 착지 시 하지 관절 충격량 분석 | • 종목별 맞춤형 스파이크/신발 인솔 설계<br/>• 당뇨발, 평발 보행 궤적 및 족저근막염 부상 진단 |
 
 ### 5.2 혼동하기 쉬운 포인트 정리
 - **면적에 따른 압력 차이**:
