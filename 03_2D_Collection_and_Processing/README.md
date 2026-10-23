@@ -241,4 +241,4 @@ $$\text{ROM} = \theta_{\max} - \theta_{\min}$$
   - 조별 실습 촬영 및 데이터 전처리-결과지 도출 실전 워크플로우 수행.
 
 ---
-> 📌 *참고: 실습에 사용된 스쿼트 원본 영상 및 엑셀 데이터 세트는 차후 안내 및 업데이트 예정.*
+> 📌 *참고: 실습에 사용된 스쿼트 원본 영상 및 2차원 동작 분석 파일([Squat.zip](./Squat.zip), [jump.zip](./jump.zip), [Vector 2D motion analysis.zip](./Vector%202D%20motion%20analysis.zip)) 첨부 완료.*

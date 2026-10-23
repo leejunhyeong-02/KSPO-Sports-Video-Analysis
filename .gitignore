@@ -54,6 +54,17 @@ venv.bak/
 *.webm
 *.m4v
 
+# Track small interactive dashboard web video clips (under 3MB each)
+!04_2D_Analysis_Report/04_pitching/videos/*.mp4
+
+# Large Raw Video & Archive Datasets (>100MB GitHub limit or raw capture)
+스켈레톤영상_9개/
+투구동작샘플/
+스켈레톤영상_9개.zip
+3조 투구동작비교분석.zip
+3조_투구비교분석.zip
+*.zip.part*
+
 # Large Model Weights & Data
 *.pt
 *.pth
@@ -76,4 +87,3 @@ tmp/
 transcripts/
 raw_transcripts/
 *.txt
-

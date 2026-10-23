@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>투구 동작 2D 비교분석</title>
+<style>
+  /* 레이아웃: 한 열, 카드 그리드. 색: 측정 테이프의 노란 종이와 그래프지 느낌의 중립 톤 + 선수별 3색 */
+  :root {
+    --bg: #f6f5f1; --panel: #ffffff; --fg: #1b1a17; --muted: #6b6960; --line: #e2e0d8; --grid: #ecebe5; --axis: #c9c7bf;
+    --p1: #2a78d6; --p2: #eb6834; --p3: #1baf7a; --chip: #1b1a17; --chip-fg: #ffffff;
+    --sans: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+    --serif: "Noto Serif KR", "Apple SD Gothic Neo", Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #171716; --panel: #1f1f1d; --fg: #f0efe9; --muted: #a5a39a; --line: #33332f; --grid: #2a2a27; --axis: #4a4944;
+    --p1: #4a90e2; --p2: #f07a48; --p3: #2cc08a; --chip: #f0efe9; --chip-fg: #171716; color-scheme: dark; } }
+  :root[data-theme="dark"] {
+    --bg: #171716; --panel: #1f1f1d; --fg: #f0efe9; --muted: #a5a39a; --line: #33332f; --grid: #2a2a27; --axis: #4a4944;
+    --p1: #4a90e2; --p2: #f07a48; --p3: #2cc08a; --chip: #f0efe9; --chip-fg: #171716; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; font-variant-numeric: tabular-nums;
+    padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 1180px; margin-inline: auto; display: grid; gap: 22px; }
+  header h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(26px, 3.4vw, 36px); margin: 0 0 6px; letter-spacing: -0.01em; text-wrap: balance; }
+  header .sub { color: var(--muted); margin: 0; }
+  header .take { margin: 10px 0 0; max-width: 78ch; font-size: 16px; }
+  .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .theme { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .card h2 { font-size: 16px; font-weight: 600; margin: 0; }
+  .note { color: var(--muted); font-size: 13px; margin: 0; }
+  .person { border-top: 4px solid var(--pc); }
+  .person .who { display: flex; align-items: baseline; gap: 10px; }
+  .person .who h2 { font-family: var(--serif); font-weight: 500; font-size: 24px; }
+  .person .who span { color: var(--muted); font-size: 13px; }
+  .rows { display: grid; grid-template-columns: auto 1fr auto; column-gap: 14px; row-gap: 6px; align-items: baseline; }
+  .rows .k { color: var(--muted); font-size: 13px; }
+  .rows .v { font-family: var(--serif); font-size: 22px; }
+  .rows .v small { font-family: var(--sans); font-size: 12px; color: var(--muted); }
+  .rows .p { color: var(--muted); font-size: 13px; text-align: right; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tabs button { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: var(--chip); color: var(--chip-fg); border-color: var(--chip); }
+  .tabs button:focus-visible, .theme:focus-visible { outline: 2px solid var(--p1); outline-offset: 2px; }
+  .chart { position: relative; min-height: 280px; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { font-family: var(--sans); fill: var(--muted); font-size: 11px; }
+  .chart text.lbl { fill: var(--fg); font-size: 12px; }
+  .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.12); padding: 6px 10px; font-size: 12px; white-space: nowrap; display: none; z-index: 2; }
+  .tip b { font-weight: 600; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  th:first-child, td:first-child { text-align: left; }
+  tr.sum td { font-weight: 600; border-top: 2px solid var(--line); }
+  .method { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px 40px; }
+  .method h3 { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+  .method ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .method li + li { margin-top: 4px; }
+  footer { color: var(--muted); font-size: 12px; }
+  @media (prefers-reduced-motion: no-preference) { .chart circle, .chart path { transition: opacity .2s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>투구 동작 2D 비교분석</h1>
+        <p class="sub">3명 × 5회 투구 · 스트라이드 길이 · 최대 무릎 높이 · 릴리스 높이 (Kinovea 측면 영상 실측, cm)</p>
+      </div>
+      <button type="button" class="theme" id="theme">다크 모드</button>
+    </div>
+    <p class="take" id="takeaway"></p>
+  </header>
+
+  <section class="grid3" id="people"></section>
+
+  <section class="card">
+    <div class="topbar">
+      <div>
+        <h2 id="cmp-title">스트라이드 길이</h2>
+        <p class="note" id="cmp-note"></p>
+      </div>
+      <div class="tabs" role="group" aria-label="지표 선택">
+        <button type="button" data-m="st" aria-pressed="true">스트라이드</button>
+        <button type="button" data-m="kn" aria-pressed="false">최대 무릎 높이</button>
+        <button type="button" data-m="rl" aria-pressed="false">릴리스 높이</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <p class="note">투구별 (1~5구) · cm</p>
+        <div class="chart" id="c-throws"><div class="tip"></div></div>
+      </div>
+      <div>
+        <p class="note">신장 대비 비율 · 큰 점 = 5회 평균, 선 = ±SD, 작은 점 = 개별 투구</p>
+        <div class="chart" id="c-pct"><div class="tip"></div></div>
+      </div>
+    </div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>스트라이드 ↔ 릴리스 높이</h2>
+      <p class="note">15회 투구. 두 축 모두 신장 대비 %. 보폭이 길수록 릴리스가 낮아지는지.</p>
+      <div class="chart" id="c-sc1"><div class="tip"></div></div>
+    </div>
+    <div class="card">
+      <h2>최대 무릎 높이 ↔ 스트라이드</h2>
+      <p class="note">15회 투구. 다리를 높이 들수록 보폭이 길어지는지.</p>
+      <div class="chart" id="c-sc2"><div class="tip"></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>투구별 실측값</h2>
+    <p class="note">Kinovea 측정 원자료. 사람별 평균 ± SD 행 포함.</p>
+    <div class="tablewrap"><table id="t-raw">
+      <thead><tr><th>이름</th><th>투구</th><th>스트라이드 (cm)</th><th>신장 대비</th><th>무릎 높이 (cm)</th><th>신장 대비</th><th>릴리스 높이 (cm)</th><th>신장 대비</th></tr></thead>
+      <tbody></tbody></table></div>
+  </section>
+
+  <section class="card">
+    <h2>포즈 추정 보조 지표</h2>
+    <p class="note">MediaPipe 포즈 추정 좌표에서 자동 계산한 값(2D 근사). 착지 프레임은 자동 검출. 실측값을 보완하는 참고 자료.</p>
+    <div class="tablewrap"><table id="t-pose">
+      <thead><tr><th>이름</th><th>투구</th><th>다리 최고점→착지 (s)</th><th>착지→릴리스 (s)</th><th>착지 시 앞무릎각 (°)</th><th>릴리스 직전 팔꿈치각 (°)</th><th>몸통 전방 기울기 (°)</th><th>몸통 측면 기울기 (°)</th></tr></thead>
+      <tbody></tbody></table></div>
+  </section>
+
+  <section class="card method">
+    <div>
+      <h3>측정 방법</h3>
+      <ul>
+        <li>촬영: 스마트폰 3대(우측면·전면·좌측면), 1920×1080, 30fps. 사람당 투구 5회.</li>
+        <li>실측(Kinovea): 투구 팔 쪽 측면 영상에서 길이 도구로 측정.</li>
+        <li>스트라이드 길이: 앞발 착지 순간 축발~앞발 수평 거리.</li>
+        <li>최대 무릎 높이: 와인드업에서 앞무릎이 가장 높은 순간의 지면 높이.</li>
+        <li>릴리스 높이: 공이 손에서 분리되는 프레임의 손끝 지면 높이.</li>
+        <li>신장 대비 %: 실측값 ÷ 신장 × 100. 사람 간 비교는 이 값으로.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>한계</h3>
+      <ul>
+        <li>30fps: 릴리스 전후 2~3프레임은 모션 블러. 릴리스 높이는 프레임 선택에 민감(한 프레임 차이로 10cm 이상 변할 수 있음).</li>
+        <li>2D 측면 영상: 카메라 평면 밖 움직임(회전, 깊이)은 반영되지 않음.</li>
+        <li>카메라별 캘리브레이션 오차가 사람 간 비교에 그대로 들어감.</li>
+        <li>대상 3명 × 5회. 경향 파악용이며 통계적 일반화는 어려움.</li>
+        <li>포즈 추정 지표는 자동 검출한 착지 프레임 기준이며 실측과 수 도 차이 가능.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>K스포에듀 스포츠영상 분석과정 · 2D 자료수집 및 결과지 작성 실습 · 2026.10.18 촬영</footer>
+</div>
+
+<script>
+// ---------- 데이터 (Kinovea 실측 + 포즈 추정) ----------
+const PEOPLE = [
+  { name: '이상민', h: 180, hand: '왼손', st: [120.02,126.08,120.06,118.57,129.54], kn: [105.85,110.32,106.99,107.49,105.85], rl: [149.98,136.47,126.81,121.10,147.03] },
+  { name: '신정환', h: 173, hand: '오른손', st: [137.75,146.50,147.69,147.71,139.98], kn: [125.20,117.32,119.20,114.64,118.01], rl: [127.91,161.74,159.69,147.99,158.20] },
+  { name: '이준형', h: 174, hand: '오른손', st: [93.18,100.92,97.31,93.76,99.66], kn: [100.50,109.84,112.11,109.69,110.86], rl: [168.58,171.45,172.80,161.38,153.81] },
+];
+// 포즈 추정: [다리최고점→착지 s, 착지→릴리스 s, 착지 앞무릎각, 릴리스직전 팔꿈치각, 몸통 전방기울기, 몸통 측면기울기(전면)]
+const POSE = {
+  '이상민': [[0.733,0.267,179.7,176.0,-5.4,-2.8],[0.767,0.267,179.9,165.4,-5.8,-2.7],[0.767,0.267,179.8,125.0,-6.4,2.2],[0.700,0.233,175.5,155.3,-3.3,0.4],[0.767,0.233,177.5,165.3,-4.9,2.0]],
+  '신정환': [[0.833,0.333,174.3,156.2,-1.5,4.7],[0.833,0.333,174.5,141.6,-0.2,6.2],[0.733,0.300,173.2,169.7,0.2,3.0],[0.700,0.300,176.4,153.0,-4.3,0.6],[0.700,0.300,170.2,143.0,-2.9,2.4]],
+  '이준형': [[0.900,0.267,167.5,110.1,6.2,2.8],[0.867,0.267,162.3,119.4,-0.7,1.2],[0.967,0.267,170.9,96.6,0.2,4.5],[0.833,0.333,176.2,114.7,-2.1,5.8],[0.967,0.300,167.3,111.7,-2.2,5.3]],
+};
+const M = {
+  st: { label: '스트라이드 길이', note: '앞발 착지 순간 축발~앞발 거리. 투구별 실측값과 신장 대비 비율.' },
+  kn: { label: '최대 무릎 높이', note: '와인드업에서 앞무릎이 가장 높은 순간의 지면 높이.' },
+  rl: { label: '릴리스 높이', note: '공이 손에서 분리되는 순간 손끝의 지면 높이.' },
+};
+const COLORS = ['var(--p1)', 'var(--p2)', 'var(--p3)'];
+const color = name => COLORS[PEOPLE.findIndex(p => p.name === name)];
+const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+const sd = a => { const m = mean(a); return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1)); };
+const f1 = v => v.toFixed(1), f2 = v => v.toFixed(2);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let metric = 'st';
+
+// 요약 통계
+const S = PEOPLE.map(p => { const o = { ...p }; for (const k of ['st', 'kn', 'rl']) { o[k + 'm'] = mean(p[k]); o[k + 's'] = sd(p[k]); o[k + 'p'] = mean(p[k]) / p.h * 100; o[k + 'cv'] = sd(p[k]) / mean(p[k]) * 100; } return o; });
+
+// ---------- 최소 SVG 도우미 ----------
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (parent) parent.appendChild(e); return e; };
+const lin = (d0, d1, r0, r1) => { const f = v => r0 + (v - d0) / (d1 - d0) * (r1 - r0); f.ticks = n => { const step = niceStep((d1 - d0) / n); const out = []; for (let v = Math.ceil(d0 / step) * step; v <= d1 + 1e-9; v += step) out.push(+v.toFixed(6)); return out; }; return f; };
+const niceStep = raw => { const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; };
+const niceDomain = (lo, hi, n = 6) => { const step = niceStep((hi - lo) / n); return [Math.floor(lo / step) * step, Math.ceil(hi / step) * step]; };
+function frame(box, h) {
+  box.querySelector('svg')?.remove();
+  const w = Math.max(280, box.clientWidth);
+  const svg = el('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%' }); box.insertBefore(svg, box.firstChild);
+  return { svg, w, h };
+}
+function yAxis(svg, y, x0, x1, fmt = v => v) {
+  for (const t of y.ticks(6)) { el('line', { x1: x0, x2: x1, y1: y(t), y2: y(t), stroke: 'var(--grid)' }, svg); const tx = el('text', { x: x0 - 8, y: y(t), 'text-anchor': 'end', 'dominant-baseline': 'middle' }, svg); tx.textContent = fmt(t); }
+}
+function tipOf(box) {
+  const t = box.querySelector('.tip');
+  return { show: (html, ev) => { const r = box.getBoundingClientRect(); const x = ev.clientX - r.left, y = ev.clientY - r.top; t.innerHTML = html; t.style.display = 'block'; const w = t.offsetWidth; t.style.left = Math.min(x + 12, box.clientWidth - w - 4) + 'px'; t.style.top = (y - 36) + 'px'; }, hide: () => { t.style.display = 'none'; } };
+}
+function hover(node, box, html) { const t = tipOf(box); node.addEventListener('mousemove', ev => t.show(html, ev)); node.addEventListener('mouseleave', t.hide); }
+
+// ---------- 화면 ----------
+function people() {
+  const host = document.getElementById('people'); host.innerHTML = '';
+  for (const p of S) {
+    const c = document.createElement('article'); c.className = 'card person'; c.style.setProperty('--pc', color(p.name));
+    const row = (k, label) => `<div class="k">${label}</div><div class="v">${f1(p[k + 'm'])}<small> ± ${f1(p[k + 's'])} cm</small></div><div class="p">신장의 ${f1(p[k + 'p'])}%</div>`;
+    c.innerHTML = `<div class="who"><h2>${esc(p.name)}</h2><span>${p.h} cm · ${esc(p.hand)} 투수</span></div><div class="rows">${row('st', '스트라이드')}${row('kn', '최대 무릎 높이')}${row('rl', '릴리스 높이')}</div>`;
+    host.appendChild(c);
+  }
+}
+function takeaway() {
+  const top = [...S].sort((a, b) => b.stp - a.stp)[0], hi = [...S].sort((a, b) => b.rlp - a.rlp)[0], lo = [...S].sort((a, b) => a.rlp - b.rlp)[0], steady = [...S].sort((a, b) => a.stcv - b.stcv)[0];
+  document.getElementById('takeaway').textContent = `${top.name}의 스트라이드가 신장의 ${f1(top.stp)}%로 가장 길고, 릴리스 높이는 ${hi.name}(${f1(hi.rlp)}%)과 ${lo.name}(${f1(lo.rlp)}%) 사이에 ${f1(hi.rlp - lo.rlp)}%p 차이가 있다. 스트라이드가 가장 일정한 사람은 ${steady.name}(변동계수 ${f1(steady.stcv)}%).`;
+}
+function throwsChart() {
+  const box = document.getElementById('c-throws'); const { svg, w, h } = frame(box, 280);
+  const m = { t: 12, r: 100, b: 32, l: 44 }; const all = PEOPLE.flatMap(p => p[metric]);
+  const [lo, hi] = niceDomain(Math.min(...all) - 5, Math.max(...all) + 5);
+  const x = i => m.l + (i - 1) / 4 * (w - m.l - m.r), y = lin(lo, hi, h - m.b, m.t);
+  yAxis(svg, y, m.l, w - m.r);
+  for (let i = 1; i <= 5; i++) { const tx = el('text', { x: x(i), y: h - m.b + 18, 'text-anchor': 'middle' }, svg); tx.textContent = i + '구'; }
+  el('line', { x1: m.l, x2: w - m.r, y1: h - m.b, y2: h - m.b, stroke: 'var(--axis)' }, svg);
+  for (const p of PEOPLE) {
+    const c = color(p.name), v = p[metric];
+    el('path', { d: v.map((val, i) => (i ? 'L' : 'M') + x(i + 1) + ' ' + y(val)).join(' '), fill: 'none', stroke: c, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+    v.forEach((val, i) => { const dot = el('circle', { cx: x(i + 1), cy: y(val), r: 5, fill: c, stroke: 'var(--panel)', 'stroke-width': 1.5 }, svg); hover(dot, box, `<span style="color:var(--muted)">${esc(p.name)} ${i + 1}구</span><br><b>${f1(val)} cm</b> · 신장의 ${f1(val / p.h * 100)}%`); });
+    const lbl = el('text', { class: 'lbl', x: x(5) + 10, y: y(v[4]), 'dominant-baseline': 'middle' }, svg); lbl.textContent = `${p.name} ${f1(mean(v))}`;
+  }
+}
+function pctChart() {
+  const box = document.getElementById('c-pct'); const { svg, w, h } = frame(box, 280);
+  const m = { t: 12, r: 16, b: 32, l: 44 }; const pts = PEOPLE.flatMap(p => p[metric].map(v => v / p.h * 100));
+  const [lo, hi] = niceDomain(Math.min(...pts) - 3, Math.max(...pts) + 3);
+  const y = lin(lo, hi, h - m.b, m.t), x = i => m.l + 40 + i / 2 * (w - m.l - m.r - 80);
+  yAxis(svg, y, m.l, w - m.r, v => v + '%'); el('line', { x1: m.l, x2: w - m.r, y1: h - m.b, y2: h - m.b, stroke: 'var(--axis)' }, svg);
+  S.forEach((p, i) => {
+    const c = color(p.name), cx = x(i), mu = p[metric + 'p'], s = p[metric + 's'] / p.h * 100;
+    const tx = el('text', { x: cx, y: h - m.b + 18, 'text-anchor': 'middle' }, svg); tx.textContent = p.name;
+    p[metric].forEach((v, j) => { const d = el('circle', { cx: cx - 14 + j * 7, cy: y(v / p.h * 100), r: 3.5, fill: c, opacity: .45 }, svg); hover(d, box, `<span style="color:var(--muted)">${esc(p.name)} ${j + 1}구</span><br><b>${f1(v / p.h * 100)}%</b>`); });
+    el('line', { x1: cx, x2: cx, y1: y(mu - s), y2: y(mu + s), stroke: c, 'stroke-width': 2 }, svg);
+    const big = el('circle', { cx, cy: y(mu), r: 7, fill: c, stroke: 'var(--panel)', 'stroke-width': 2 }, svg); hover(big, box, `<span style="color:var(--muted)">${esc(p.name)} 평균</span><br><b>${f1(mu)}%</b> ± ${f1(s)}%p · ${f1(p[metric + 'm'])} ± ${f1(p[metric + 's'])} cm`);
+    const lbl = el('text', { class: 'lbl', x: cx + 12, y: y(mu), 'dominant-baseline': 'middle' }, svg); lbl.textContent = f1(mu) + '%';
+  });
+}
+function scatter(id, kx, ky, xl, yl) {
+  const box = document.getElementById(id); const { svg, w, h } = frame(box, 260);
+  const m = { t: 14, r: 16, b: 40, l: 48 };
+  const pts = PEOPLE.flatMap(p => p[kx].map((v, i) => ({ name: p.name, n: i + 1, x: v / p.h * 100, y: p[ky][i] / p.h * 100 })));
+  const [xlo, xhi] = niceDomain(Math.min(...pts.map(d => d.x)) - 3, Math.max(...pts.map(d => d.x)) + 3);
+  const [ylo, yhi] = niceDomain(Math.min(...pts.map(d => d.y)) - 3, Math.max(...pts.map(d => d.y)) + 3, 5);
+  const x = lin(xlo, xhi, m.l, w - m.r), y = lin(ylo, yhi, h - m.b, m.t);
+  yAxis(svg, y, m.l, w - m.r, v => v + '%'); el('line', { x1: m.l, x2: w - m.r, y1: h - m.b, y2: h - m.b, stroke: 'var(--axis)' }, svg);
+  for (const t of x.ticks(6)) { const tx = el('text', { x: x(t), y: h - m.b + 16, 'text-anchor': 'middle' }, svg); tx.textContent = t + '%'; }
+  const ax = el('text', { x: w - m.r, y: h - 4, 'text-anchor': 'end' }, svg); ax.textContent = xl;
+  const ay = el('text', { x: m.l, y: m.t - 4 }, svg); ay.textContent = yl;
+  for (const d of pts) { const c = el('circle', { cx: x(d.x), cy: y(d.y), r: 6, fill: color(d.name), opacity: .85, stroke: 'var(--panel)', 'stroke-width': 1.5 }, svg); hover(c, box, `<span style="color:var(--muted)">${esc(d.name)} ${d.n}구</span><br>${xl} <b>${f1(d.x)}%</b> · ${yl} <b>${f1(d.y)}%</b>`); }
+}
+function tables() {
+  const tb = document.querySelector('#t-raw tbody'); tb.innerHTML = '';
+  for (const p of S) {
+    for (let i = 0; i < 5; i++) { const tr = document.createElement('tr'); tr.innerHTML = `<td>${esc(p.name)}</td><td>${i + 1}</td><td>${f1(p.st[i])}</td><td>${f1(p.st[i] / p.h * 100)}%</td><td>${f1(p.kn[i])}</td><td>${f1(p.kn[i] / p.h * 100)}%</td><td>${f1(p.rl[i])}</td><td>${f1(p.rl[i] / p.h * 100)}%</td>`; tb.appendChild(tr); }
+    const tr = document.createElement('tr'); tr.className = 'sum'; tr.innerHTML = `<td>${esc(p.name)}</td><td>평균 ± SD</td><td>${f1(p.stm)} ± ${f1(p.sts)}</td><td>${f1(p.stp)}%</td><td>${f1(p.knm)} ± ${f1(p.kns)}</td><td>${f1(p.knp)}%</td><td>${f1(p.rlm)} ± ${f1(p.rls)}</td><td>${f1(p.rlp)}%</td>`; tb.appendChild(tr);
+  }
+  const tp = document.querySelector('#t-pose tbody'); tp.innerHTML = '';
+  for (const p of PEOPLE) POSE[p.name].forEach((r, i) => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${esc(p.name)}</td><td>${i + 1}</td><td>${f2(r[0])}</td><td>${f2(r[1])}</td><td>${f1(r[2])}</td><td>${f1(r[3])}</td><td>${f1(r[4])}</td><td>${f1(r[5])}</td>`; tp.appendChild(tr); });
+}
+function drawCharts() {
+  document.getElementById('cmp-title').textContent = M[metric].label;
+  document.getElementById('cmp-note').textContent = M[metric].note;
+  document.getElementById('legend').innerHTML = PEOPLE.map(p => `<span><i style="background:${color(p.name)}"></i>${esc(p.name)}</span>`).join('');
+  throwsChart(); pctChart();
+  scatter('c-sc1', 'st', 'rl', '스트라이드', '릴리스 높이');
+  scatter('c-sc2', 'kn', 'st', '최대 무릎 높이', '스트라이드');
+}
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => { metric = b.dataset.m; document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawCharts(); }));
+const themeBtn = document.getElementById('theme');
+const applyTheme = t => { if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme'); const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; themeBtn.textContent = dark ? '라이트 모드' : '다크 모드'; };
+themeBtn.addEventListener('click', () => { const cur = document.documentElement.getAttribute('data-theme'); const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; const next = dark ? 'light' : 'dark'; applyTheme(next); try { localStorage.setItem('pt-theme', next); } catch (e) {} });
+try { applyTheme(localStorage.getItem('pt-theme') || null); } catch (e) { applyTheme(null); }
+people(); takeaway(); tables(); drawCharts();
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawCharts, 120); });
+</script>
+</body>
+</html>
