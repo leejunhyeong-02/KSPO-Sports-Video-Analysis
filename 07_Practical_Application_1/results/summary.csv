@@ -1,0 +1,4 @@
+cond,n,reach_cm,reach_pctH,shoulder_fwd_cm,arm_cm,ground_reach_cm,step_cm,pelvis_rot_deg,trunk_rot_deg,elbow_flex_peak
+JAB,13,66.01,42.58,18.59,47.41,77.31,11.31,10.03,21.16,25.47
+STRAIGHT,12,83.03,53.57,31.01,52.01,78.61,-4.42,42.35,72.91,9.83
+STRAIGHTx,12,73.18,47.21,21.51,51.67,73.2,0.02,22.31,55.56,14.49

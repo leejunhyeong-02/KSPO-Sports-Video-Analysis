@@ -1,0 +1,16 @@
+# OpenCap 원본 영상·포즈 결과 (용량·개인정보)
+Videos/
+CalibrationImages/
+*.mov
+*.mp4
+*.pkl
+*.pickle
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
