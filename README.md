@@ -8,8 +8,8 @@
   <img src="https://img.shields.io/badge/Organizer-KSPO%20국민체육진흥공단-005BAC?style=flat-square" alt="KSPO" />
   <img src="https://img.shields.io/badge/Operator-hunet-EA2839?style=flat-square" alt="Hunet" />
   <img src="https://img.shields.io/badge/Period-2026.10.10_~_11.07_(54h)-10b981?style=flat-square" alt="Period" />
-  <img src="https://img.shields.io/badge/Progress-8%20%2F%209%20Weeks%20Completed%20(88.9%25)-3b82f6?style=flat-square" alt="Progress" />
-  <img src="https://img.shields.io/badge/Status-In_Progress-f59e0b?style=flat-square" alt="Status" />
+  <img src="https://img.shields.io/badge/Progress-9%20%2F%209%20Weeks%20Completed%20(100%25)-10b981?style=flat-square" alt="Progress" />
+  <img src="https://img.shields.io/badge/Status-Completed-success?style=flat-square" alt="Status" />
 </p>
 
 <p align="left">
@@ -55,7 +55,7 @@
 | **6회차** | `10.25 (일)` | **3차원 시스템 셋업 & 소프트웨어 심층** | • OpenCap 현장 셋업 시연 및 캘리브레이션 트러블슈팅 분석<br/>• **Visual3D** 심층 교육: CODA 골반 모델링, 분절 좌표계, 301개 파이프라인<br/>• 움직임 이론 (이벤트·페이즈, COM/BOS/COP 균형 패턴) & 진로 Q&A | ✅ 완료 | [📁 06_3D_Report](./06_3D_Analysis_Report/) |
 | **7회차** | `10.31 (토)` | **스포츠영상 분석 적용 실습 (Part 1)** | • **스탠포드 OpenCap 복싱 3D 모션 분석 (STRAIGHT vs STRAIGHTx)**<br/>• 하체·골반 회전의 스트레이트 리치 기여도 규명 (**+9.8cm 차이, r=0.86**)<br/>• 키네마틱 시퀀스(골반→허리→팔꿈치) 분석 및 Python 파이프라인 구축 | ✅ 완료 | [📁 07_Practical_1](./07_Practical_Application_1/) |
 | **8회차** | `11.01 (일)` | **스포츠영상 분석 적용 실습 (Part 2)** | • **축구 11인 시계열 트래킹 데이터(10Hz 2D 좌표) 속도·이동거리 분석**<br/>• 포지션별 활동량(LCM 5.69km, RCM 5.32km), 포메이션 지도 & 히트맵 시각화<br/>• 미분 노이즈와 필터링, 바이오메카닉스 현장 적용(해석·설득) 철학 | ✅ 완료 | [📁 08_Practical_2](./08_Practical_Application_2/) |
-| **9회차** | `11.07 (토)` | **성과물 발표 및 수료** | • **개인별 최종 프로젝트 결과 보고서 및 슬라이드 발표**<br/>• 전문가 심사 및 피드백 수렴, 교육과정 수료 | ⏳ 예정 | [📁 09_Final](./09_Final_Project/) |
+| **9회차** | `11.07 (토)` | **성과물 발표 및 수료** | • **개인별 최종 프로젝트 발표 및 평가 (과정 수료)**<br/>• **KBO 체크스윙 실시간 자동 판정 시스템 — 16,723프레임 좌표 데이터로 다시 본 오판정 19건의 원인과 마커리스 한계 분석**<br/>• 공간(px)·시간(fps) 해상도 한계 및 하이브리드 판정 로드맵 제안 | ✅ 완료 | [📁 09_Final](./09_Final_Project/) |
 
 ---
 
@@ -94,6 +94,18 @@
 - **원문**: *OpenCap Monocular: 3D Human Kinematics and Musculoskeletal Dynamics from a Single Smartphone Video* (Gilon et al., arXiv:2603.24733)
 - **핵심 혁신**: 단 1대의 스마트폰 영상에서 컴퓨터 비전(WHAM)과 PyTorch 물리 기반 2단계 최적화, OpenSim 33-자유도 구속 모델을 결합하여 전신 운동학 및 동역학(GRF, 관절 모멘트) 복원
 - **수학적 근거**: 발 미끄러짐(Foot Skating) 억제 손실 함수($L_{\text{foot slide}}$)를 통한 골반 드리프트 10배 감소(56.9cm → 4.9cm), 30°~45° 전측면 배치가 시상면/전두면 정보를 모두 보존하는 수학적 최적해임을 검증
+
+### 5. ⚾ [9회차] KBO 체크스윙 실시간 자동 판정 시스템 — 좌표 데이터로 다시 본 오판정 19건의 원인과 마커리스 한계 분석
+- **연구 주제**: 단일 2D 측면 영상 기반 KBO 체크스윙 자동 판독 알고리즘의 오판정 19건(False Negative) 원인 역학적·기하학적 심층 규명
+- **실험 데이터**: KBORC 판독 영상 145건, **16,723개 프레임 원천 좌표 시계열 데이터** 전수 분석 및 145/145 완벽 재현
+- **핵심 발견 (공간 오차와 마커리스 AI의 한계)**:
+  - **기하학적 레버리지**: 홈플레이트 앞면 길이가 짧아 앞면 점 단 6픽셀(px) 오차가 기준선 회전 오차 약 10°(−9.8°)를 유발하여 경계선 스윙을 노스윙으로 오판정
+  - **정적 구조물의 미세 진동 및 그물망 왜곡**: 정지된 홈플레이트조차 광학 노이즈로 ±2.6° 진동, 백스탑 그물망 가림(Occlusion) 시 ±7°까지 요동
+  - **AI 모델의 과신(Overconfidence)**: 좌표를 잘못 추정하는 순간에도 모델 신뢰도(Confidence)는 0.95 이상을 유지하여 자체 필터링 불가
+- **강사진 심층 피드백 (시간 해상도의 한계)**:
+  - 30fps 환경에서는 스윙 피크 구간에서 배트 끝이 한 프레임당 약 40px(상위 10%) 이동하며, 놓친 스윙 19건은 기준선까지 약 25px(중앙값) 모자랐음
+  - 즉, 배트가 실제 선을 넘은 순간이 **'프레임과 프레임 사이(Inter-frame)'**에 존재했을 가능성이 매우 높음을 300fps 타격 다운샘플링 시연을 통해 규명
+- **개선 로드맵**: 판정 여유 < 4° 구간 인간 심판 이관(오류 9건 사전 차단), 홈플레이트 기준선 사전 캘리브레이션, 연속 프레임 간 다항식 궤적 보간 및 다중 시점(상단 오버헤드 뷰) 결합
 
 ---
 
@@ -163,7 +175,9 @@ KSPO-Sports-Video-Analysis/
 │   └── notes/                                 # 8일차 강의 요약 및 엑셀 수식 계산 가이드
 │
 ├── 09_Final_Project/                           # [9회차 | 11.07]
-│   └── README.md                              # 최종 개인 발표 프로젝트 개요 및 발표 슬라이드
+│   ├── README.md                              # 최종 프로젝트 종합 개요, 한계 분석 및 강사 피드백 요약
+│   ├── 스포에듀_성과물발표.pdf                   # 최종 발표 슬라이드 (12장)
+│   └── 성과물_발표_회고_체크스윙_자동_판정_한계_분석.md # 발표 녹취록, 상세 질의응답 및 자가 회고록
 │
 └── docs/                                       # 공식 공고문, 교육과정 규정 및 참고 매뉴얼
 ```
