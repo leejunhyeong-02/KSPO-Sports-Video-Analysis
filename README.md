@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/badge/Period-2026.10.10_~_11.07_(54h)-10b981?style=flat-square" alt="Period" />
   <img src="https://img.shields.io/badge/Progress-9%20%2F%209%20Weeks%20Completed%20(100%25)-10b981?style=flat-square" alt="Progress" />
   <img src="https://img.shields.io/badge/Status-Completed-success?style=flat-square" alt="Status" />
+  <a href="./docs/스포츠영상분석_교육수료증.pdf"><img src="https://img.shields.io/badge/📜_Certificate-KSPO_공식_수료증_PDF-005BAC?style=flat-square" alt="Certificate" /></a>
 </p>
 
 <p align="left">
@@ -27,6 +28,7 @@
 - **교육 기간**: **2026. 10. 10.(토) ~ 11. 07.(토)** (매주 토·일요일 10:00~17:00, 총 9회차 / 54시간)
 - **교육 장소**: 서울 송파구 올림픽공원 내 스포츠인재아카데미 2강의실
 - **수료 기준**: 출석률 70% 이상 (54H 기준) + 최종 개인 발표 평가 60점 이상
+- **수료 여부**: **공식 수료 완료 (2026. 11. 07)** 📜 [교육수료증 확인](./docs/스포츠영상분석_교육수료증.pdf)
 - **교육 목표**: 
   - 2D/3D 광학 영상 장비 및 마커리스 컴퓨터 비전(Markerless CV) 기반 운동학·운동역학 데이터 수집 역량 확보
   - 인체 지레, 토크, 충격량, 키네마틱 시퀀스(Kinematic Sequence) 등 생체역학 법칙에 입각한 심층 동작 해석
@@ -179,7 +181,10 @@ KSPO-Sports-Video-Analysis/
 │   ├── 스포에듀_성과물발표.pdf                   # 최종 발표 슬라이드 (12장)
 │   └── 성과물_발표_회고_체크스윙_자동_판정_한계_분석.md # 발표 녹취록, 상세 질의응답 및 자가 회고록
 │
-└── docs/                                       # 공식 공고문, 교육과정 규정 및 참고 매뉴얼
+└── docs/                                       # 공식 공고문, 교육수료증 및 참고 매뉴얼
+    ├── 스포츠영상분석_교육수료증.pdf               # KSPO 국민체육진흥공단 발행 공식 수료증 (제2026-00512578호)
+    ├── README.md                              # 공식 문서 및 수료증 아카이브 안내
+    └── announcement_extracted.txt             # 2026년 스포츠 영상분석 과정 모집 공고문
 ```
 
 ---
