@@ -241,5 +241,5 @@ flowchart TD
 
 - **이준형 (Junhyeong Lee)**
 - **GitHub**: [@leejunhyeong-02](https://github.com/leejunhyeong-02)
-- **Email**: wnsgu02@naver.com
+- **Email**: leejunhyeong02@gmail.com
 - **Interests**: Sports Biomechanics, Computer Vision, Deep Learning Pose Estimation, Kinematics Data Engineering
